@@ -1,0 +1,73 @@
+﻿@model NewViewModel
+@{
+    Layout = "../Shared/_NavLayout.cshtml";
+    ViewData["Title"] = "Create new atomic swap offer";
+    ViewData.SetActivePageAndTitle(WalletsNavPages.AtomicSwaps);
+}
+
+<h4>@ViewData["Title"]</h4>
+
+<div class="row">
+    <div class="col-md-10">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="SelectedWallet" class="control-label"></label>
+                <select asp-for="SelectedWallet" asp-items="Model.WalletList" class="form-control" onchange="updateCryptoDestination();"></select>
+                <span asp-validation-for="SelectedWallet" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="RateRule" class="control-label"></label>
+                <div class="input-group">
+                    <input asp-for="RateRule" class="form-control" />
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" style="display:none;" id="cryptoDestination"></span>
+                    </div>
+                </div>
+                <span asp-validation-for="RateRule" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Amount"></label>
+                <div class="input-group">
+                    <input asp-for="Amount" class="form-control" />
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">@Model.CryptoCode</span>
+                    </div>
+                </div>
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Spread"></label>
+                <div class="input-group">
+                    <input asp-for="Spread" class="form-control" />
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
+                <span asp-validation-for="Spread" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="New offer" class="btn btn-primary" />
+            </div>
+        </form>
+        <a asp-action="AtomicSwapList">Back to List</a>
+    </div>
+</div>
+
+@section Scripts
+    {
+    <script type="text/javascript">
+        var srvModel = @Html.Raw(Json.Serialize(Model));
+        $(function () {
+            updateCryptoDestination();
+        });
+        function updateCryptoDestination() {
+            var val = $("#SelectedWallet").val();
+            var selected = srvModel.walletData[val];
+            $("#cryptoDestination").text(selected.cryptoCode + " per " + '@Model.CryptoCode');
+            $("#RateRule").val(selected.rule);
+            $("#Spread").val(selected.spread * 100);
+            $("#cryptoDestination").show();
+        }
+    </script>
+}

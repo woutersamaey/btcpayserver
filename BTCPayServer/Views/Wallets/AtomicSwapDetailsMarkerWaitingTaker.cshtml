@@ -1,0 +1,21 @@
+﻿@model AtomicSwapDetailsMarkerWaitingTakerViewModel
+@{
+    Layout = "../Shared/_NavLayout.cshtml";
+    ViewData["Title"] = "Manage atomic swaps";
+    ViewData.SetActivePageAndTitle(WalletsNavPages.AtomicSwaps);
+}
+
+
+<div class="row">
+    <div class="col-md-10">
+        <p>You will buy <b>@Model.ToReceive</b> against <b>@Model.ToSend</b>, you need to find a partner for this trade.</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-10 text-center">
+        <div class="alert alert-warning alert-dismissible" role="alert">
+            <span>Share the following link with the party willing to take your offer</span>
+            <span><b>@Model.OfferUri</b></span>
+        </div>
+    </div>
+</div>

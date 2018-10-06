@@ -41,6 +41,7 @@ using BTCPayServer.Validation;
 using ExchangeSharp;
 using System.Security.Cryptography.X509Certificates;
 using BTCPayServer.Lightning;
+using BTCPayServer.Views.Wallets;
 
 namespace BTCPayServer.Tests
 {
@@ -1016,6 +1017,103 @@ namespace BTCPayServer.Tests
                 Assert.Equal(50, rateVm.Spread);
                 Assert.True(rateVm.ShowScripting);
                 Assert.Contains("DOGE_X", rateVm.Script, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        [Fact]
+        public void CanSwapCurrencies()
+        {
+            using (var tester = ServerTester.Create())
+            {
+                tester.Start();
+                var user = tester.NewAccount();
+                user.GrantAccess();
+                var userBTCWallet = user.RegisterDerivationScheme("BTC");
+                var userLTCWallet = user.RegisterDerivationScheme("LTC");
+                WalletId userBTCWallet2 = null;
+                WalletId userLTCWallet2 = null;
+                // For having faster test, let's create user2 concurrently
+                var creatingUser2 = Task.Run(() =>
+                {
+                    var u = tester.NewAccount();
+                    u.GrantAccess();
+                    userBTCWallet2 = u.RegisterDerivationScheme("BTC");
+                    userLTCWallet2 = u.RegisterDerivationScheme("LTC");
+                    return u;
+                });
+
+                
+
+                var atomics = user.GetController<WalletsController>();
+                var newXSwap = Assert.IsType<NewViewModel>(Assert.IsType<ViewResult>(atomics.NewAtomicSwap(userBTCWallet).Result).Model);
+                Assert.Equal(2, newXSwap.WalletList.Count());
+                Assert.Contains(userBTCWallet.ToString(), newXSwap.WalletList.Select(c => c.Value));
+                Assert.Contains(userLTCWallet.ToString(), newXSwap.WalletList.Select(c => c.Value));
+                newXSwap.Amount = 1.0;
+                newXSwap.Spread = 5;
+                newXSwap.RateRule = "coinaverage(BTC_USD) * coinaverage(USD_LTC);";
+                newXSwap.SelectedWallet = userLTCWallet.ToString();
+
+                Assert.IsType<RedirectToActionResult>(atomics.NewAtomicSwap(userBTCWallet, newXSwap).GetAwaiter().GetResult());
+                Assert.NotNull(atomics.CreatedOfferId);
+                var entry = atomics.AtomicSwapRepository.GetEntry(atomics.CreatedOfferId).Result;
+                Assert.NotNull(entry);
+                var offer = entry.Offer;
+                // The amount of BTC is less than the amount of LTC because it is more expensive
+                Assert.True(offer.Offer.Amount < offer.Price.Amount);
+                Assert.Equal("BTC", offer.Offer.CryptoCode);
+                Assert.Equal("LTC", offer.Price.CryptoCode);
+                Assert.Equal("coinaverage(BTC_USD) * coinaverage(USD_LTC)", offer.Rule);
+
+                // Let's check it the offer appear in the list
+                var list = Assert.IsType<ListViewModel>(Assert.IsType<ViewResult>(atomics.AtomicSwapList(userBTCWallet).Result).Model);
+                var item = list.Swaps[0];
+                Assert.Equal(XSwapRole.Maker.ToString(), item.Role);
+                Assert.Equal("1.00000000 BTC", item.Sent);
+                Assert.Equal("10.50000000 LTC", item.Received);
+                Assert.Equal(XSwapStatus.WaitingTaker.ToString(), item.Status);
+
+                // Let's get user2 take the offer
+                var user2 = creatingUser2.Result;
+                var apps2 = user2.GetController<AppsController>();
+
+                var atomics2 = user2.GetController<WalletsController>();
+                var takeVM = Assert.IsType<TakeViewModel>(Assert.IsType<ViewResult>(atomics2.TakeAtomicSwap(userBTCWallet2)).Model);
+                takeVM.MakerUri = atomics.AtomicSwapRepository.GetEntry(atomics.CreatedOfferId).Result.Offer.MarketMakerUri.ToString();
+
+                var list2 = Assert.IsType<ListViewModel>(Assert.IsType<ViewResult>(atomics2.AtomicSwapList(userBTCWallet2).Result).Model);
+                Assert.Empty(list2.Swaps);
+
+                atomics2.TakeAtomicSwap(userBTCWallet2, takeVM).Wait();
+
+                list = Assert.IsType<ListViewModel>(Assert.IsType<ViewResult>(atomics.AtomicSwapList(userBTCWallet).Result).Model);
+                list2 = Assert.IsType<ListViewModel>(Assert.IsType<ViewResult>(atomics2.AtomicSwapList(userBTCWallet2).Result).Model);
+
+                Assert.Single(list.Swaps);
+                Assert.Single(list2.Swaps);
+
+                Assert.Null(list.Swaps[0].Partner);
+                Assert.Equal("127.0.0.1", list2.Swaps[0].Partner);
+                Assert.Equal(XSwapStatus.WaitingTaker.ToString(), list.Swaps[0].Status);
+                Assert.Equal(XSwapStatus.WaitingTaker.ToString(), list2.Swaps[0].Status);
+
+                var takerVM = Assert.IsType<AtomicSwapDetailsTakerWaitingTakerViewModel>(Assert.IsType<ViewResult>(atomics2.AtomicSwapDetails(userBTCWallet2, atomics2.CreatedOfferId).Result).Model);
+
+                atomics2.AcceptAtomicSwapOffer(userBTCWallet2, atomics2.CreatedOfferId, takerVM).Wait();
+
+                list = Assert.IsType<ListViewModel>(Assert.IsType<ViewResult>(atomics.AtomicSwapList(userBTCWallet).Result).Model);
+                list2 = Assert.IsType<ListViewModel>(Assert.IsType<ViewResult>(atomics2.AtomicSwapList(userBTCWallet2).Result).Model);
+
+                Assert.Equal(XSwapStatus.WaitingEscrow.ToString(), list.Swaps[0].Status);
+                Assert.Equal(XSwapStatus.WaitingEscrow.ToString(), list2.Swaps[0].Status);
+                Assert.Equal(XSwapRole.Maker.ToString(), list.Swaps[0].Role);
+                Assert.Equal(XSwapRole.Taker.ToString(), list2.Swaps[0].Role);
+                Assert.Equal("1.00000000 BTC", list.Swaps[0].Sent);
+                Assert.Equal("10.50000000 LTC", list.Swaps[0].Received);
+                Assert.Equal("10.50000000 LTC", list2.Swaps[0].Sent);
+                Assert.Equal("1.00000000 BTC", list2.Swaps[0].Received);
+
+                var swapControler= Assert.IsType<AtomicSwapEscrowViewModel>(Assert.IsType<ViewResult>(atomics.AtomicSwapDetails(userBTCWallet, atomics.CreatedOfferId).Result).Model);
             }
         }
 

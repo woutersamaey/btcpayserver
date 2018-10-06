@@ -24,7 +24,8 @@ namespace BTCPayServer
                 CryptoImagePath = "imlegacy/litecoin.svg",
                 LightningImagePath = "imlegacy/litecoin-lightning.svg",
                 DefaultSettings = BTCPayDefaultSettings.GetDefaultSettings(NetworkType),
-                CoinType = NetworkType == NetworkType.Mainnet ? new KeyPath("2'") : new KeyPath("1'")
+                CoinType = NetworkType == NetworkType.Mainnet ? new KeyPath("2'") : new KeyPath("1'"),
+                BlockTime = TimeSpan.FromMinutes(2.5),
             });
         }
     }

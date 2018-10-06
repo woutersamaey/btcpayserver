@@ -1,7 +1,8 @@
 ﻿@inject SignInManager<ApplicationUser> SignInManager
 
 <div class="nav flex-column nav-pills">
-    <a class="nav-link @ViewData.IsActivePage(WalletsNavPages.Transactions)" asp-action="WalletTransactions">Transactions</a>
-    <a class="nav-link @ViewData.IsActivePage(WalletsNavPages.Send)" asp-action="WalletSend">Send</a>
+    <a class="nav-link @ViewData.IsActivePage(WalletsNavPages.Transactions)" asp-action="WalletTransactions" asp-controller="Wallets">Transactions</a>
+    <a class="nav-link @ViewData.IsActivePage(WalletsNavPages.Send)" asp-action="WalletSend" asp-controller="Wallets">Send</a>
+    <a class="nav-link @ViewData.IsActivePage(WalletsNavPages.AtomicSwaps)" asp-action="AtomicSwapList">Atomic Swaps</a>
 </div>
 

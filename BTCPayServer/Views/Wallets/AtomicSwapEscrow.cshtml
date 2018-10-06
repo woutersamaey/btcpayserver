@@ -1,0 +1,25 @@
+﻿@model AtomicSwapEscrowViewModel
+@{
+    Layout = "../Shared/_NavLayout.cshtml";
+    ViewData["Title"] = "Manage atomic swaps";
+    ViewData.SetActivePageAndTitle(WalletsNavPages.AtomicSwaps);
+}
+
+
+<div class="row">
+    <div class="col-md-10">
+        <p>You will buy <b>@Model.ToReceive</b> against <b>@Model.ToSend</b>, if your peer get unresponsive, you will get back your money in <a asp-action="WalletTransactions" asp-route-walletId="@Model.SentToWalletId">your wallet</a> in <b>@Model.RefundTime.Time.TimeString() (@Model.RefundTime.BlockCount blocks remaining)</b>.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-10">
+        <form asp-action="WalletSend" method="get">
+            <div class="form-group">
+                <input type="submit" value="Proceed to payment" class="btn btn-primary" />
+                <input type="hidden" name="defaultDestination" value="@Model.EscrowAddress" />
+                <input type="hidden" name="defaultAmount" value="@Model.Amount" />
+            </div>
+        </form>
+    </div>
+</div>

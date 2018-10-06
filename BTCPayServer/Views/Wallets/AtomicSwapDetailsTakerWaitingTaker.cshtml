@@ -1,0 +1,27 @@
+﻿@model AtomicSwapDetailsTakerWaitingTakerViewModel
+@{
+    Layout = "../Shared/_NavLayout.cshtml";
+    ViewData["Title"] = "Manage atomic swaps";
+    ViewData.SetActivePageAndTitle(WalletsNavPages.AtomicSwaps);
+}
+
+
+<div class="row">
+    <div class="col-md-10">
+        <p>You will buy <b>@Model.ToReceive</b> against <b>@Model.ToSend</b>, if your peer get unresponsive, you will get back your money on <a asp-action="WalletTransactions" asp-route-walletId="@Model.WalletId">your wallet</a> in <b>@Model.RefundTime.Time.TimeString()  (@Model.RefundTime.BlockCount blocks remaining)</b>.</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-10">
+        <form method="post">
+            <div class="form-group">
+                <label asp-for="SelectedWallet" class="control-label"></label>
+                <select asp-for="SelectedWallet" asp-items="Model.WalletList" class="form-control"></select>
+                <span asp-validation-for="SelectedWallet" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Accept offer" asp-action="AcceptAtomicSwapOffer" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>

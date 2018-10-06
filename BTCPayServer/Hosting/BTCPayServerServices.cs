@@ -42,6 +42,7 @@ using BTCPayServer.Security;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using NBXplorer.DerivationStrategy;
 using NicolasDorier.RateLimits;
+using BTCPayServer.Views.Wallets;
 
 namespace BTCPayServer.Hosting
 {
@@ -55,6 +56,8 @@ namespace BTCPayServer.Hosting
                 factory.ConfigureBuilder(o);
             });
             services.AddHttpClient();
+            services.TryAddSingleton<AtomicSwapRepository>();
+            services.TryAddSingleton<AtomicSwapClientFactory>();
             services.TryAddSingleton<SettingsRepository>();
             services.TryAddSingleton<InvoicePaymentNotification>();
             services.TryAddSingleton<BTCPayServerOptions>(o => o.GetRequiredService<IOptions<BTCPayServerOptions>>().Value);

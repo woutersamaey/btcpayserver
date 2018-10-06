@@ -1,0 +1,47 @@
+﻿@model ListViewModel
+@{
+    Layout = "../Shared/_NavLayout.cshtml";
+    ViewData["Title"] = "Manage atomic swaps";
+    ViewData.SetActivePageAndTitle(WalletsNavPages.AtomicSwaps);
+}
+
+<h4>@ViewData["Title"]</h4>
+<div class="row">
+    <div class="col-md-10 text-center">
+        <partial name="_StatusMessage" for="@TempData["TempDataProperty-StatusMessage"]" />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-10">
+        <a asp-action="NewAtomicSwap" class="btn btn-primary" role="button"><span class="fa fa-plus"></span> Make a @Model.CryptoCode offer</a>&nbsp;
+        <a asp-action="TakeAtomicSwap" class="btn btn-secondary" role="button"><span class="fa fa-sign-in"></span> Take a @Model.CryptoCode offer</a>
+        <table class="table table-sm table-responsive-md">
+            <thead>
+                <tr>
+                    <th style="text-align:center">Date</th>
+                    <th style="text-align:center">Partner</th>
+                    <th style="text-align:right">Send</th>
+                    <th style="text-align:right">Receive</th>
+                    <th style="text-align:center">Status</th>
+                    <th style="text-align:right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var swap in Model.Swaps)
+                {
+                    <tr>
+                        <td>@swap.Timestamp.ToTimeAgo()</td>
+                        <td>@swap.Partner</td>
+                        <td style="text-align:right;">@swap.Sent</td>
+                        <td style="text-align:right;">@swap.Received</td>
+                        <td style="text-align:center">@swap.Status</td>
+                        <td style="text-align:right">
+                            <a asp-action="AtomicSwapDetails" asp-route-walletId="@swap.WalletId" asp-route-offerId="@swap.OfferId">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

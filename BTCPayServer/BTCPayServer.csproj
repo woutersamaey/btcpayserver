@@ -44,7 +44,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Filter" Version="1.1.2" />
     <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.6.0" />
-    <PackageReference Include="NBitcoin" Version="4.1.1.48" />
+    <PackageReference Include="NBitcoin" Version="4.1.1.51" />
     <PackageReference Include="NBitpayClient" Version="1.0.0.30" />	  
     <PackageReference Include="DBreeze" Version="1.87.0" />
     <PackageReference Include="NBXplorer.Client" Version="1.0.3" />
@@ -122,6 +122,27 @@
 	<ItemGroup>
     <Content Update="Views\Apps\_ViewImports.cshtml">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Wallets\AtomicSwapDetailsMarkerWaitingTaker.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Wallets\AtomicSwapEscrow.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Wallets\AtomicSwapDetailsTakerWaitingTaker.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Wallets\AtomicSwapDetails.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Wallets\TakeAtomicSwap.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Wallets\NewAtomicSwap.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Wallets\AtomicSwapList.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
     <Content Update="Views\Server\SSHService.cshtml">
